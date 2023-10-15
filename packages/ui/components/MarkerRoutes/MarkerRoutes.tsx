@@ -15,7 +15,7 @@ import {
   findMapDetails,
   mapFilters,
   mapIsAeternumMap,
-  regionNames,
+  // regionNames, //TODO: RYAN - posssibly use this instead of doing lookup on server in RouteSearch.tsx
 } from 'static';
 import { useMarkers } from '../../contexts/MarkersContext';
 import { escapeRegExp } from '../../utils/regExp';
