@@ -46,7 +46,8 @@ import { initItemsCollection } from './lib/items/collection.js';
 import itemsRouter from './lib/items/router.js';
 import liveRouter from './lib/live/router.js';
 import { initSocket } from './lib/live/socket.js';
-import searchRouter from './lib/search/router.js';
+import searchNodeRouter from './lib/search/node/router.js';
+import searchRouteRouter from './lib/search/route/router.js';
 import { initSupportersCollection } from './lib/supporters/collection.js';
 import supportersRouter from './lib/supporters/router.js';
 
@@ -147,7 +148,8 @@ async function runServer() {
     app.use('/api/marker-routes', markerRoutesRouter);
     app.use('/api/users', usersRouter);
     app.use('/api/screenshots', screenshotsRouter);
-    app.use('/api/search', searchRouter);
+    app.use('/api/search/node', searchNodeRouter);
+    app.use('/api/search/route', searchRouteRouter);
     app.use('/api/items', itemsRouter);
     app.use('/api/supporters', supportersRouter);
     app.use('/api/influences', influencesRouter);

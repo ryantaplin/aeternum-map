@@ -18,7 +18,6 @@ import {
   regionNames,
 } from 'static';
 import { useMarkers } from '../../contexts/MarkersContext';
-import { useFiltersStore } from '../../utils/filtersStore';
 import { escapeRegExp } from '../../utils/regExp';
 import { useMap } from '../../utils/routes';
 import { usePersistentState } from '../../utils/storage';
@@ -27,6 +26,8 @@ import { useUserStore } from '../../utils/userStore';
 import { useUpsertStore } from '../UpsertArea/upsertStore';
 import { getMarkerRoutes } from './api';
 import MarkerRoute from './MarkerRoute';
+import RouteSearch from '../RouteSearch/RouteSearch';
+import { useRouteSearchStore } from '../RouteSearch/routeSearchStore';
 
 export type MarkerRouteItem = {
   _id: string;
@@ -53,11 +54,10 @@ export type MarkerRouteItem = {
   updatedAt: string;
 };
 
-type SortBy = 'match' | 'favorites' | 'date' | 'name' | 'username';
-type Filter = 'all' | 'myRoutes' | 'favorites' | string;
+type SortBy = 'date' | 'favorites' | 'name' | 'username';
 
 function handleFilter(
-  filter: Filter,
+  filters: string[],
   search: string,
   account: AccountDTO | null
 ) {
@@ -75,22 +75,32 @@ function handleFilter(
     });
     return matchedMarkersType || item.name.match(regExp);
   };
-  if (filter === 'favorites') {
-    return (item: MarkerRouteItem) =>
-      account?.favoriteRouteIds?.includes(item._id) && filterBySearch(item);
-  }
-  if (filter === 'myRoutes') {
-    return (item: MarkerRouteItem) =>
-      item.userId === account?.steamId && filterBySearch(item);
-  }
-  if (regionNames.includes(filter)) {
-    return (item: MarkerRouteItem) =>
-      item.regions?.includes(filter) && filterBySearch(item);
-  }
-  return (item: MarkerRouteItem) => filterBySearch(item);
+
+  const complexFilter = (item: MarkerRouteItem) => {
+    return (
+      (filters?.length ?? 0) <= 0 ||
+      !filters
+        .map((filter) => {
+          const [, filterCondition, filterValue] = filter.match(/(\w+): (.*)/)!;
+          return (
+            (filterCondition == 'is' &&
+              filterValue === 'favorite' &&
+              account?.favoriteRouteIds?.includes(item._id)) ||
+            (filterCondition == 'is' && filterValue === 'archived') || //TODO: RYAN - add isArchive info
+            (filterCondition.startsWith('author') &&
+              item.username === filterValue) ||
+            (filterCondition.startsWith('region') &&
+              item.regions.includes(filterValue))
+          );
+        })
+        .includes(false)
+    );
+  };
+
+  return (item: MarkerRouteItem) => complexFilter(item) && filterBySearch(item);
 }
 
-function handleSort(sortBy: SortBy, filters: string[]) {
+function handleSort(sortBy: SortBy) {
   if (sortBy === 'favorites') {
     return (a: MarkerRouteItem, b: MarkerRouteItem) =>
       (b.favorites || 0) - (a.favorites || 0);
@@ -107,18 +117,8 @@ function handleSort(sortBy: SortBy, filters: string[]) {
     return (a: MarkerRouteItem, b: MarkerRouteItem) =>
       a.username.localeCompare(b.username);
   }
-  return (a: MarkerRouteItem, b: MarkerRouteItem) => {
-    const typesA = Object.keys(a.markersByType);
-    const typesB = Object.keys(b.markersByType);
-    const matchA =
-      typesA.length /
-      typesA.filter((type) => filters.some((filter) => filter.startsWith(type)))
-        .length;
-    const matchB =
-      typesB.length /
-      typesB.filter((type) => filters.some((filter) => filter.startsWith(type)))
-        .length;
-    return matchA - matchB;
+  return (_a: MarkerRouteItem, _b: MarkerRouteItem) => {
+    return 0;
   };
 }
 
@@ -132,21 +132,17 @@ function MarkerRoutes(): JSX.Element {
   const upsertStore = useUpsertStore();
   const [sortBy, setSortBy] = usePersistentState<SortBy>(
     'markerRoutesSort',
-    'match'
-  );
-  const [filter, setFilter] = usePersistentState<Filter>(
-    'markerRoutesFilter',
-    'all'
+    'date'
   );
   const [search, setSearch] = usePersistentState('searchRoutes', '');
-  const { filters } = useFiltersStore();
+  const filters = useRouteSearchStore((state) => state.routeFilters);
 
   const [limit, setLimit] = useState(10);
   const map = useMap();
 
   useEffect(() => {
     setLimit(10);
-  }, [sortBy, filter, search]);
+  }, [sortBy, filters, search]);
 
   useEffect(() => {
     const selectedMarkerRoutes: MarkerRouteItem[] = [];
@@ -184,9 +180,9 @@ function MarkerRoutes(): JSX.Element {
   const sortedMarkerRoutes = useMemo(
     () =>
       visibleMarkerRoutes
-        .filter(handleFilter(filter, search, account))
-        .sort(handleSort(sortBy, filters)),
-    [sortBy, visibleMarkerRoutes, filters, filter, search]
+        .filter(handleFilter(filters, search, account))
+        .sort(handleSort(sortBy)),
+    [sortBy, visibleMarkerRoutes, filters, search]
   );
 
   return (
@@ -202,6 +198,7 @@ function MarkerRoutes(): JSX.Element {
         </Button>
         <Button onClick={() => setMarkerRoutes([])}>Hide all</Button>
       </Group>
+      <RouteSearch />
       <Group spacing="xs" grow>
         <TextInput
           placeholder="Node or title..."
@@ -213,24 +210,10 @@ function MarkerRoutes(): JSX.Element {
           value={sortBy}
           onChange={(value) => setSortBy(value as SortBy)}
           data={[
-            { value: 'match', label: 'By match' },
-            { value: 'favorites', label: 'By favorites' },
             { value: 'date', label: 'By date' },
+            { value: 'favorites', label: 'By favorites' },
             { value: 'name', label: 'By name' },
             { value: 'username', label: 'By username' },
-          ]}
-        />
-        <Select
-          value={filter}
-          onChange={(value) => setFilter(value as Filter)}
-          data={[
-            { value: 'all', label: 'All' },
-            { value: 'favorites', label: 'Favorites' },
-            { value: 'myRoutes', label: 'My routes' },
-            ...regionNames.map((regionName) => ({
-              value: regionName,
-              label: regionName,
-            })),
           ]}
         />
       </Group>

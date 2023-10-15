@@ -2,32 +2,32 @@ import type { SelectItem } from '@mantine/core';
 import { MultiSelect } from '@mantine/core';
 import { useState } from 'react';
 import { fetchJSON } from '../../utils/api';
-import { useMarkerSearchStore } from './markerSearchStore';
+import { useRouteSearchStore } from './routeSearchStore';
 
 const groups: {
   [group: string]: string;
 } = {
-  'From user': 'from:',
-  'Marker name': 'name:',
-  'Marker has': 'has:',
-  'Marker is': 'is:',
-  'Loot contains': 'loot:',
+  'Route is': 'is:',
+  'Route in region': 'region:',
+  'Route author': 'author:',
 };
 const options = Object.values(groups);
 
 const defaultData: SelectItem[] = [
-  { value: 'name:', label: 'name: marker', group: 'Search Options' },
-  { value: 'loot:', label: 'loot: item', group: 'Search Options' },
-  { value: 'is:', label: 'is: hidden', group: 'Search Options' },
-  { value: 'has:', label: 'has: comment or issue', group: 'Search Options' },
-  { value: 'has: comment', label: 'has: comment', group: 'Marker has' },
-  { value: 'has: issue', label: 'has: issue', group: 'Marker has' },
-  { value: 'is: hidden', label: 'is: hidden', group: 'Marker is' },
-  { value: 'from:', label: 'from: user', group: 'Search Options' },
+  { value: 'is:', label: 'is: ...', group: 'Search Options' },
+  // { value: 'is: archived', label: 'is: Archived', group: 'Route is' }, //TODO: RYAN - update server with this info & come back to it later
+  { value: 'is: favorite', label: 'is: Favorite', group: 'Route is' },
+
+  { value: 'region:', label: 'region: ...', group: 'Search Options' },
+  { value: 'author:', label: 'author: ...', group: 'Search Options' },
 ];
 
-function MarkerSearch() {
-  const { searchValues, onChange, refreshMarkerIds } = useMarkerSearchStore();
+function RouteSearch() {
+  const {
+    searchValues,
+    onChange,
+    refreshRouteIds: refreshRouteIds,
+  } = useRouteSearchStore();
   const [searchValue, onSearchChange] = useState('');
   const [data, setData] = useState<SelectItem[]>(defaultData);
   const [loaded, setLoaded] = useState(false);
@@ -38,27 +38,21 @@ function MarkerSearch() {
     }
     setLoaded(true);
     fetchJSON<{
-      from: string[];
-      name: string[];
-      loot: string[];
-    }>('/api/search/node')
+      users: string[];
+      regions: string[];
+    }>('/api/search/route')
       .then((result) => {
         setData((current) => [
           ...current,
-          ...result.from.map((item) => ({
-            value: `from: ${item}`,
-            label: `from: ${item}`,
-            group: 'From user',
+          ...result.users.map((item) => ({
+            value: `author: ${item}`,
+            label: `author: ${item}`,
+            group: 'Route author',
           })),
-          ...result.name.map((item) => ({
-            value: `name: ${item}`,
-            label: `name: ${item}`,
-            group: 'Marker name',
-          })),
-          ...result.loot.map((item) => ({
-            value: `loot: ${item}`,
-            label: `loot: ${item}`,
-            group: 'Loot contains',
+          ...result.regions.map((item) => ({
+            value: `region: ${item}`,
+            label: `region: ${item}`,
+            group: 'Route in region',
           })),
         ]);
       })
@@ -81,7 +75,7 @@ function MarkerSearch() {
           onSearchChange(`${searchValues.at(-1)!} `);
         } else {
           onChange(searchValues);
-          refreshMarkerIds();
+          refreshRouteIds();
         }
       }}
       filter={(value, _selected, item) => {
@@ -102,4 +96,4 @@ function MarkerSearch() {
   );
 }
 
-export default MarkerSearch;
+export default RouteSearch;
