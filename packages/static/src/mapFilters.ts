@@ -266,6 +266,18 @@ export const mapFilters: FilterItem[] = [
   },
   {
     category: 'skinning',
+    type: 'chameleon',
+    title: 'Chameleon',
+    iconUrl: '/pois/chameleon.webp',
+  },
+  {
+    category: 'skinning',
+    type: 'drake',
+    title: 'Drake',
+    iconUrl: '/pois/drake.webp',
+  },
+  {
+    category: 'skinning',
     type: 'elk',
     title: 'Elk',
     iconUrl: '/pois/elk.webp',
@@ -296,6 +308,12 @@ export const mapFilters: FilterItem[] = [
   },
   {
     category: 'skinning',
+    type: 'lampyrid',
+    title: 'Lampyrid',
+    iconUrl: '/pois/lampyrid.webp',
+  },
+  {
+    category: 'skinning',
     type: 'lion',
     title: 'Lion',
     iconUrl: '/pois/puma.webp',
@@ -305,6 +323,12 @@ export const mapFilters: FilterItem[] = [
     type: 'lynx',
     title: 'Lynx',
     iconUrl: '/pois/lynx.webp',
+  },
+  {
+    category: 'skinning',
+    type: 'mammoth',
+    title: 'Mammoth',
+    iconUrl: '/pois/mammoth.webp',
   },
   {
     category: 'skinning',
@@ -436,19 +460,19 @@ export const mapFilters: FilterItem[] = [
   {
     category: 'mining',
     type: 'statue_bear',
-    title: 'Bear Statue',
+    title: 'Statue (Bear)',
     iconUrl: '/pois/statue_bear.webp',
   },
   {
     category: 'mining',
     type: 'statue_wolf',
-    title: 'Wolf Statue',
+    title: 'Statue (Wolf)',
     iconUrl: '/pois/statue_wolf.webp',
   },
   {
     category: 'mining',
     type: 'statue_human',
-    title: 'Human Statue',
+    title: 'Statue (Human)',
     iconUrl: '/pois/statue_human.webp',
   },
   {
