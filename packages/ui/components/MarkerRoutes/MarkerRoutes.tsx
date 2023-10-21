@@ -36,6 +36,7 @@ export type MarkerRouteItem = {
   userId: string;
   username: string;
   isPublic: boolean;
+  isArchived: boolean;
   map?: string;
   positions: [number, number][];
   texts?: {
@@ -87,7 +88,9 @@ function handleFilter(
             (filterCondition === 'is' &&
               filterValue === 'favorite' &&
               account?.favoriteRouteIds?.includes(item._id)) ||
-            (filterCondition === 'is' && filterValue === 'archived') || //TODO: RYAN - add isArchive info
+            (filterCondition === 'is' &&
+              filterValue === 'archived' &&
+              item.isArchived) ||
             (filterCondition === 'is' &&
               filterValue === 'enabled' &&
               markerRoutes.find((marker) => marker._id == item._id)) ||

@@ -79,12 +79,18 @@ function MarkerRoute({
           {markerRoute.issues || 0}
         </Badge>
       </Group>
+      {markerRoute.isArchived ? (
+        <Badge size="sm" color="red">
+          Archived: {toTimeAgo(new Date(markerRoute.updatedAt))}
+        </Badge>
+      ) : (
+        ''
+      )}
       <Link to={url} style={{ textDecoration: 'none' }}>
         <Stack spacing={2}>
           <Title order={4} color="yellow" size="md">
             {markerRoute.name}
           </Title>
-
           <div className={styles.regions}>{markerRoute.regions.join(', ')}</div>
           <Text size="xs" className={styles.info}>
             {toTimeAgo(new Date(markerRoute.updatedAt))} by{' '}
