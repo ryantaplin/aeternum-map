@@ -352,7 +352,6 @@ markerRoutesRouter.patch(
 
 markerRoutesRouter.patch('/:id/accessed', async (req, res, next) => {
   try {
-    console.log('Updated Route Access');
     const { id } = req.params;
     if (!ObjectId.isValid(id)) {
       res.status(400).send('Invalid payload');
