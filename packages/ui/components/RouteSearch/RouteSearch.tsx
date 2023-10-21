@@ -2,6 +2,7 @@ import type { SelectItem } from '@mantine/core';
 import { MultiSelect } from '@mantine/core';
 import { useState } from 'react';
 import { fetchJSON } from '../../utils/api';
+import { regionNames } from 'static';
 import { useRouteSearchStore } from './routeSearchStore';
 
 const groups: {
@@ -38,6 +39,16 @@ function RouteSearch() {
       return;
     }
     setLoaded(true);
+
+    setData((current) => [
+      ...current,
+      ...regionNames.map((item) => ({
+        value: `region: ${item}`,
+        label: `region: ${item}`,
+        group: 'Route in region',
+      })),
+    ]);
+
     fetchJSON<{
       users: string[];
       regions: string[];
@@ -49,11 +60,6 @@ function RouteSearch() {
             value: `publisher: ${item}`,
             label: `publisher: ${item}`,
             group: 'Route publisher',
-          })),
-          ...result.regions.map((item) => ({
-            value: `region: ${item}`,
-            label: `region: ${item}`,
-            group: 'Route in region',
           })),
         ]);
       })
