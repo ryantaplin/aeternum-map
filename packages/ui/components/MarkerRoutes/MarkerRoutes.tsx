@@ -94,7 +94,7 @@ function handleFilter(
             (filterCondition === 'is' &&
               filterValue === 'enabled' &&
               markerRoutes.find((marker) => marker._id == item._id)) ||
-            (filterCondition.startsWith('author') &&
+            (filterCondition.startsWith('publisher') &&
               item.username === filterValue) ||
             (filterCondition.startsWith('region') &&
               item.regions.includes(filterValue))

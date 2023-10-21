@@ -9,7 +9,7 @@ const groups: {
 } = {
   'Route is': 'is:',
   'Route in region': 'region:',
-  'Route author': 'author:',
+  'Route publisher': 'publisher:',
 };
 const options = Object.values(groups);
 
@@ -20,7 +20,7 @@ const defaultData: SelectItem[] = [
   { value: 'is: enabled', label: 'is: Enabled', group: 'Route is' },
 
   { value: 'region:', label: 'region: ...', group: 'Search Options' },
-  { value: 'author:', label: 'author: ...', group: 'Search Options' },
+  { value: 'publisher:', label: 'publisher: ...', group: 'Search Options' },
 ];
 
 function RouteSearch() {
@@ -46,9 +46,9 @@ function RouteSearch() {
         setData((current) => [
           ...current,
           ...result.users.map((item) => ({
-            value: `author: ${item}`,
-            label: `author: ${item}`,
-            group: 'Route author',
+            value: `publisher: ${item}`,
+            label: `publisher: ${item}`,
+            group: 'Route publisher',
           })),
           ...result.regions.map((item) => ({
             value: `region: ${item}`,
