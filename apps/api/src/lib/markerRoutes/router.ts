@@ -173,6 +173,7 @@ markerRoutesRouter.post('/', ensureAuthenticated, async (req, res, next) => {
       isArchived: Boolean(isArchived),
       createdAt: now,
       updatedAt: now,
+      lastAccessedAt: now,
     };
 
     if (Array.isArray(texts)) {
@@ -280,8 +281,10 @@ markerRoutesRouter.patch(
         return;
       }
 
+      const now = new Date();
       const markerRoute: Partial<MarkerRouteDTO> = {
-        updatedAt: new Date(),
+        updatedAt: now,
+        lastAccessedAt: now,
       };
       if (typeof name === 'string' && name.length <= MAX_MARKER_ROUTE_LENGTH) {
         markerRoute.name = name;
@@ -346,6 +349,29 @@ markerRoutesRouter.patch(
     }
   }
 );
+
+markerRoutesRouter.patch('/:id/accessed', async (req, res, next) => {
+  try {
+    console.log('Updated Route Access');
+    const { id } = req.params;
+    if (!ObjectId.isValid(id)) {
+      res.status(400).send('Invalid payload');
+      return;
+    }
+
+    const query: Filter<MarkerRouteDTO> = {
+      _id: new ObjectId(id),
+    };
+    await getMarkerRoutesCollection().findOneAndUpdate(query, {
+      $set: {
+        lastAccessedAt: new Date(),
+      },
+    });
+    res.status(201);
+  } catch (error) {
+    next(error);
+  }
+});
 
 markerRoutesRouter.post(
   '/:id/comments',

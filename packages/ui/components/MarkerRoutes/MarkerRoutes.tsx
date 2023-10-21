@@ -11,12 +11,7 @@ import {
 import { IconFilter } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  findMapDetails,
-  mapFilters,
-  mapIsAeternumMap,
-  // regionNames, //TODO: RYAN - posssibly use this instead of doing lookup on server in RouteSearch.tsx
-} from 'static';
+import { findMapDetails, mapFilters, mapIsAeternumMap } from 'static';
 import { useMarkers } from '../../contexts/MarkersContext';
 import { escapeRegExp } from '../../utils/regExp';
 import { useMap } from '../../utils/routes';

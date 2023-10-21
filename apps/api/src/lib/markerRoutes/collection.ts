@@ -99,7 +99,9 @@ function ensureMarkerRoutesSchema(): Promise<Document> {
           updatedAt: {
             bsonType: 'date',
           },
-          //TODO: RYAN - add lastAccessedAt
+          lastAccessedAt: {
+            bsonType: 'date',
+          },
           comments: {
             bsonType: 'int',
           },
