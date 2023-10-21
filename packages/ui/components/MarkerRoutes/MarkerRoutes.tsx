@@ -61,6 +61,7 @@ function handleFilter(
   search: string,
   account: AccountDTO | null
 ) {
+  const { markerRoutes } = useMarkers();
   const regExp = new RegExp(escapeRegExp(search), 'i');
   const filterBySearch = (item: MarkerRouteItem) => {
     if (search === '') {
@@ -83,10 +84,13 @@ function handleFilter(
         .map((filter) => {
           const [, filterCondition, filterValue] = filter.match(/(\w+): (.*)/)!;
           return (
-            (filterCondition == 'is' &&
+            (filterCondition === 'is' &&
               filterValue === 'favorite' &&
               account?.favoriteRouteIds?.includes(item._id)) ||
-            (filterCondition == 'is' && filterValue === 'archived') || //TODO: RYAN - add isArchive info
+            (filterCondition === 'is' && filterValue === 'archived') || //TODO: RYAN - add isArchive info
+            (filterCondition === 'is' &&
+              filterValue === 'enabled' &&
+              markerRoutes.find((marker) => marker._id == item._id)) ||
             (filterCondition.startsWith('author') &&
               item.username === filterValue) ||
             (filterCondition.startsWith('region') &&

@@ -17,6 +17,7 @@ const defaultData: SelectItem[] = [
   { value: 'is:', label: 'is: ...', group: 'Search Options' },
   // { value: 'is: archived', label: 'is: Archived', group: 'Route is' }, //TODO: RYAN - update server with this info & come back to it later
   { value: 'is: favorite', label: 'is: Favorite', group: 'Route is' },
+  { value: 'is: enabled', label: 'is: Enabled', group: 'Route is' },
 
   { value: 'region:', label: 'region: ...', group: 'Search Options' },
   { value: 'author:', label: 'author: ...', group: 'Search Options' },
