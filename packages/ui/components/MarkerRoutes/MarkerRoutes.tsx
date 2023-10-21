@@ -232,6 +232,9 @@ function MarkerRoutes(): JSX.Element {
         {!isLoading &&
           sortedMarkerRoutes
             .slice(0, limit)
+            .filter((route) =>
+              route.isArchived ? filters.includes('is: archived') : true
+            )
             .map((markerRoute) => (
               <MarkerRoute
                 key={markerRoute._id}
