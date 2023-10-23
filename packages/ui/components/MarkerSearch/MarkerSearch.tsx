@@ -41,7 +41,7 @@ function MarkerSearch() {
       from: string[];
       name: string[];
       loot: string[];
-    }>('/api/search/node')
+    }>('/api/search')
       .then((result) => {
         setData((current) => [
           ...current,

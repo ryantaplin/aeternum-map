@@ -44,9 +44,6 @@ function ensureMarkerRoutesSchema(): Promise<Document> {
           isPublic: {
             bsonType: 'bool',
           },
-          isArchived: {
-            bsonType: 'bool',
-          },
           favorites: {
             bsonType: 'int',
           },
@@ -99,7 +96,7 @@ function ensureMarkerRoutesSchema(): Promise<Document> {
           updatedAt: {
             bsonType: 'date',
           },
-          lastAccessedAt: {
+          lastUsedAt: {
             bsonType: 'date',
           },
           comments: {

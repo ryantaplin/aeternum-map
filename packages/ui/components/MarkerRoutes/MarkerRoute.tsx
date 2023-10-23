@@ -79,12 +79,10 @@ function MarkerRoute({
           {markerRoute.issues || 0}
         </Badge>
       </Group>
-      {markerRoute.isArchived ? (
+      {markerRoute.lastUsedAt && (
         <Badge size="sm" color="red">
-          Archived: {toTimeAgo(new Date(markerRoute.updatedAt))}
+          Last Usage: {toTimeAgo(new Date(markerRoute.lastUsedAt))}
         </Badge>
-      ) : (
-        ''
       )}
       <Link to={url} style={{ textDecoration: 'none' }}>
         <Stack spacing={2}>

@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { getItemsCollection } from '../../items/collection.js';
-import { getMarkersCollection } from '../../markers/collection.js';
+import { getItemsCollection } from '../items/collection.js';
+import { getMarkersCollection } from '../markers/collection.js';
 
-const searchNodeRouter = Router();
+const searchRouter = Router();
 
-searchNodeRouter.get('/', async (_req, res, next) => {
+searchRouter.get('/', async (_req, res, next) => {
   try {
     const [from, name, loot] = await Promise.all([
       getMarkersCollection().distinct('username', { isPrivate: { $ne: true } }),
@@ -25,7 +25,7 @@ searchNodeRouter.get('/', async (_req, res, next) => {
   }
 });
 
-searchNodeRouter.get('/from/:username', async (req, res, next) => {
+searchRouter.get('/from/:username', async (req, res, next) => {
   try {
     const markerIds = await getMarkersCollection()
       .find({ username: req.params.username }, { projection: { _id: 1 } })
@@ -38,7 +38,7 @@ searchNodeRouter.get('/from/:username', async (req, res, next) => {
   }
 });
 
-searchNodeRouter.get('/loot/:name', async (req, res, next) => {
+searchRouter.get('/loot/:name', async (req, res, next) => {
   try {
     const results = await getItemsCollection()
       .find({ name: req.params.name }, { projection: { markerIds: 1 } })
@@ -50,4 +50,4 @@ searchNodeRouter.get('/loot/:name', async (req, res, next) => {
   }
 });
 
-export default searchNodeRouter;
+export default searchRouter;

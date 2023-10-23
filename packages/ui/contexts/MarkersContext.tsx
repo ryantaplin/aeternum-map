@@ -221,10 +221,6 @@ export function MarkersProvider({
       markerRoutesClone.splice(index, 1);
     } else if (force !== false) {
       markerRoutesClone.push(markerRoute);
-      //TODO - RYAN: bit of a quick & dirty way to achieve lastAccessed on route toggle - discuss with Leon
-      fetchJSON(`/api/marker-routes/${markerRoute._id}/accessed`, {
-        method: 'PATCH',
-      });
       if (latestLeafletMap) {
         latestLeafletMap.fitBounds(markerRoute.positions);
       }

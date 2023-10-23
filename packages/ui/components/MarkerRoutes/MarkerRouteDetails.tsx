@@ -33,7 +33,7 @@ import { latestLeafletMap } from '../WorldMap/useWorldMap';
 import DeleteRoute from './DeleteRoute';
 import ForkRoute from './ForkRoute';
 import type { MarkerRouteItem } from './MarkerRoutes';
-import { patchFavoriteMarkerRoute, patchMarkerRoute } from './api';
+import { patchFavoriteMarkerRoute } from './api';
 import useMarkerRoute from './useMarkerRoute';
 const { VITE_API_ENDPOINT = '' } = import.meta.env;
 
@@ -149,10 +149,6 @@ const MarkerRouteDetails = () => {
       account?.favoriteRouteIds?.some((routeId) => markerRoute._id === routeId)
   );
 
-  const isArchived = Boolean(markerRoute && markerRoute.isArchived);
-
-  const isPublic = Boolean(markerRoute && markerRoute.isPublic);
-
   async function handleFavorite(): Promise<void> {
     if (!account || !routeId) {
       return;
@@ -163,30 +159,6 @@ const MarkerRouteDetails = () => {
         success: 'Favored route changed 👌',
       });
       refreshAccount();
-      refetch();
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  async function handleArchive(): Promise<void> {
-    if (!account || !routeId) {
-      return;
-    }
-
-    const partialMarkerRoute: Partial<MarkerRouteItem> = {
-      isArchived: !isArchived,
-    };
-
-    try {
-      const updatedMarkerRoute = await notify(
-        patchMarkerRoute(routeId, partialMarkerRoute),
-        {
-          success: 'Route ' + (!isArchived ? 'Reinstated' : 'Archived') + ' 👌',
-        }
-      );
-      toggleMarkerRoute(updatedMarkerRoute, true);
-      queryClient.invalidateQueries(['routes']);
       refetch();
     } catch (error) {
       console.error(error);
@@ -258,15 +230,6 @@ const MarkerRouteDetails = () => {
               {markerRoute.favorites || 0} favored
             </Badge>
           </Group>
-          {markerRoute.isArchived ? (
-            <Group>
-              <Badge size="sm" color="red">
-                Archived: {toTimeAgo(new Date(markerRoute.updatedAt))}
-              </Badge>
-            </Group>
-          ) : (
-            ''
-          )}
           <Text size="xs">
             Added {markerRoute && toTimeAgo(new Date(markerRoute.createdAt))}{' '}
             {markerRoute.username && <Credit username={markerRoute.username} />}
@@ -369,13 +332,11 @@ const MarkerRouteDetails = () => {
               }
             }}
           />
-          {!isArchived && (
-            <ReportIssueButton
-              markerRouteId={markerRoute._id}
-              onReport={refetch}
-            />
-          )}
-          {editable && !isArchived && (
+          <ReportIssueButton
+            markerRouteId={markerRoute._id}
+            onReport={refetch}
+          />
+          {editable && (
             <Button
               color="teal"
               leftIcon="✍"
@@ -387,26 +348,14 @@ const MarkerRouteDetails = () => {
               Edit route
             </Button>
           )}
-          {isPublic ? (
-            <Button
-              title="Archive"
-              variant={isArchived ? 'outline' : 'filled'}
-              color="red"
-              disabled={!account}
-              onClick={handleArchive}
-            >
-              {isArchived ? 'Reinstate' : 'Archive'}
-            </Button>
-          ) : (
-            <DeleteRoute
-              routeId={markerRoute._id}
-              onDelete={async () => {
-                toggleMarkerRoute(markerRoute, false);
-                queryClient.invalidateQueries(['routes']);
-                handleClose();
-              }}
-            />
-          )}
+          <DeleteRoute
+            routeId={markerRoute._id}
+            onDelete={async () => {
+              toggleMarkerRoute(markerRoute, false);
+              queryClient.invalidateQueries(['routes']);
+              handleClose();
+            }}
+          />
         </Stack>
       )}
     </Drawer>

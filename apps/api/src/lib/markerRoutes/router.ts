@@ -12,6 +12,109 @@ import type { MarkerRouteDTO } from './types.js';
 const markerRoutesRouter = Router();
 
 const MAX_MARKER_ROUTE_LENGTH = 100;
+markerRoutesRouter.post('/', ensureAuthenticated, async (req, res, next) => {
+  try {
+    const {
+      name,
+      description,
+      isPublic,
+      positions,
+      texts,
+      markersByType,
+      map,
+      origin,
+    } = req.body;
+    const account = req.account!;
+
+    if (
+      typeof name !== 'string' ||
+      name.length > MAX_MARKER_ROUTE_LENGTH ||
+      typeof isPublic !== 'boolean'
+    ) {
+      res.status(400).send('Invalid payload');
+      return;
+    }
+
+    if (positions.length === 0 || !Array.isArray(positions)) {
+      res.status(400).send('Invalid payload');
+      return;
+    }
+
+    const now = new Date();
+    const markerRoute: MarkerRouteDTO = {
+      name,
+      userId: account.steamId,
+      username: account.name,
+      positions: positions.map((position) =>
+        position.map((part: number) => new Double(part))
+      ) as [Double, Double][],
+      regions: findRegions(positions, map),
+      markersByType,
+      isPublic: Boolean(isPublic),
+      createdAt: now,
+      updatedAt: now,
+      lastUsedAt: now,
+    };
+
+    if (Array.isArray(texts)) {
+      markerRoute.texts = texts.map((text) => ({
+        position: text.position.map((part: number) => new Double(part)) as [
+          Double,
+          Double
+        ],
+        text: text.text,
+      }));
+    }
+
+    if (typeof description === 'string') {
+      markerRoute.description = description;
+    }
+
+    if (ObjectId.isValid(origin)) {
+      markerRoute.origin = new ObjectId(origin);
+    }
+
+    if (
+      typeof map === 'string' &&
+      !mapIsAeternumMap(map) &&
+      findMapDetails(map)
+    ) {
+      markerRoute.map = map;
+    }
+
+    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const existingMarkerRoute = await getMarkerRoutesCollection().findOne({
+      name: new RegExp(`^${escapedName}$`, 'i'),
+      username: account.name,
+    });
+    if (existingMarkerRoute) {
+      res.status(409).send('Route with same name already exists');
+      return;
+    }
+    const inserted = await getMarkerRoutesCollection().insertOne(markerRoute);
+    if (!inserted.acknowledged) {
+      res.status(500).send('Error inserting marker');
+      return;
+    }
+    if (markerRoute.origin) {
+      await getMarkerRoutesCollection().updateOne(
+        { _id: new ObjectId(markerRoute.origin) },
+        { $inc: { forks: 1 } }
+      );
+    }
+
+    res.status(200).json(markerRoute);
+
+    postToDiscord(
+      `🗺️ ${markerRoute.origin ? 'Forked' : 'New'} route ${name} added by ${
+        account.name
+      }\n${getMarkerRoutesURL(inserted.insertedId.toString(), map)}`,
+      markerRoute.isPublic
+    );
+  } catch (error) {
+    next(error);
+  }
+});
 
 markerRoutesRouter.get('/', async (req, res, next) => {
   try {
@@ -130,112 +233,6 @@ markerRoutesRouter.delete(
   }
 );
 
-markerRoutesRouter.post('/', ensureAuthenticated, async (req, res, next) => {
-  try {
-    const {
-      name,
-      description,
-      isPublic,
-      isArchived,
-      positions,
-      texts,
-      markersByType,
-      map,
-      origin,
-    } = req.body;
-    const account = req.account!;
-
-    if (
-      typeof name !== 'string' ||
-      name.length > MAX_MARKER_ROUTE_LENGTH ||
-      typeof isPublic !== 'boolean'
-    ) {
-      res.status(400).send('Invalid payload');
-      return;
-    }
-
-    if (positions.length === 0 || !Array.isArray(positions)) {
-      res.status(400).send('Invalid payload');
-      return;
-    }
-
-    const now = new Date();
-    const markerRoute: MarkerRouteDTO = {
-      name,
-      userId: account.steamId,
-      username: account.name,
-      positions: positions.map((position) =>
-        position.map((part: number) => new Double(part))
-      ) as [Double, Double][],
-      regions: findRegions(positions, map),
-      markersByType,
-      isPublic: Boolean(isPublic),
-      isArchived: Boolean(isArchived),
-      createdAt: now,
-      updatedAt: now,
-      lastAccessedAt: now,
-    };
-
-    if (Array.isArray(texts)) {
-      markerRoute.texts = texts.map((text) => ({
-        position: text.position.map((part: number) => new Double(part)) as [
-          Double,
-          Double
-        ],
-        text: text.text,
-      }));
-    }
-
-    if (typeof description === 'string') {
-      markerRoute.description = description;
-    }
-
-    if (ObjectId.isValid(origin)) {
-      markerRoute.origin = new ObjectId(origin);
-    }
-
-    if (
-      typeof map === 'string' &&
-      !mapIsAeternumMap(map) &&
-      findMapDetails(map)
-    ) {
-      markerRoute.map = map;
-    }
-
-    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const existingMarkerRoute = await getMarkerRoutesCollection().findOne({
-      name: new RegExp(`^${escapedName}$`, 'i'),
-      username: account.name,
-    });
-    if (existingMarkerRoute) {
-      res.status(409).send('Route with same name already exists');
-      return;
-    }
-    const inserted = await getMarkerRoutesCollection().insertOne(markerRoute);
-    if (!inserted.acknowledged) {
-      res.status(500).send('Error inserting marker');
-      return;
-    }
-    if (markerRoute.origin) {
-      await getMarkerRoutesCollection().updateOne(
-        { _id: new ObjectId(markerRoute.origin) },
-        { $inc: { forks: 1 } }
-      );
-    }
-
-    res.status(200).json(markerRoute);
-
-    postToDiscord(
-      `🗺️ ${markerRoute.origin ? 'Forked' : 'New'} route ${name} added by ${
-        account.name
-      }\n${getMarkerRoutesURL(inserted.insertedId.toString(), map)}`,
-      markerRoute.isPublic
-    );
-  } catch (error) {
-    next(error);
-  }
-});
-
 markerRoutesRouter.patch(
   '/:id',
   ensureAuthenticated,
@@ -248,7 +245,6 @@ markerRoutesRouter.patch(
         name,
         description,
         isPublic,
-        isArchived,
         positions,
         markersByType,
         map,
@@ -284,7 +280,7 @@ markerRoutesRouter.patch(
       const now = new Date();
       const markerRoute: Partial<MarkerRouteDTO> = {
         updatedAt: now,
-        lastAccessedAt: now,
+        lastUsedAt: now,
       };
       if (typeof name === 'string' && name.length <= MAX_MARKER_ROUTE_LENGTH) {
         markerRoute.name = name;
@@ -294,9 +290,6 @@ markerRoutesRouter.patch(
       }
       if (typeof isPublic === 'boolean') {
         markerRoute.isPublic = isPublic;
-      }
-      if (typeof isArchived === 'boolean') {
-        markerRoute.isArchived = isArchived;
       }
       if (
         typeof map === 'string' &&
@@ -349,28 +342,6 @@ markerRoutesRouter.patch(
     }
   }
 );
-
-markerRoutesRouter.patch('/:id/accessed', async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    if (!ObjectId.isValid(id)) {
-      res.status(400).send('Invalid payload');
-      return;
-    }
-
-    const query: Filter<MarkerRouteDTO> = {
-      _id: new ObjectId(id),
-    };
-    await getMarkerRoutesCollection().findOneAndUpdate(query, {
-      $set: {
-        lastAccessedAt: new Date(),
-      },
-    });
-    res.status(201);
-  } catch (error) {
-    next(error);
-  }
-});
 
 markerRoutesRouter.post(
   '/:id/comments',

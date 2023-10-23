@@ -7,7 +7,6 @@ export type MarkerRouteDTO = {
   userId: string;
   username: string;
   isPublic: boolean;
-  isArchived: boolean;
   positions: [Double, Double][];
   texts?: {
     position: [Double, Double];
@@ -22,5 +21,5 @@ export type MarkerRouteDTO = {
   origin?: ObjectId;
   createdAt: Date;
   updatedAt: Date;
-  lastAccessedAt: Date;
+  lastUsedAt: Date;
 };
