@@ -84,6 +84,9 @@ function MarkerRoute({
           Last Usage: {toTimeAgo(new Date(markerRoute.lastUsedAt))}
         </Badge>
       )}
+      <Badge size="sm" color="indigo">
+        Used By: {markerRoute.usageCount ?? 0}
+      </Badge>
       <Link to={url} style={{ textDecoration: 'none' }}>
         <Stack spacing={2}>
           <Title order={4} color="yellow" size="md">

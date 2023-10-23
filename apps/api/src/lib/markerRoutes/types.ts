@@ -22,4 +22,9 @@ export type MarkerRouteDTO = {
   createdAt: Date;
   updatedAt: Date;
   lastUsedAt: Date;
+  usageCount: number;
+  usage: {
+    lastUsedAt: Date;
+    userId: string;
+  }[];
 };

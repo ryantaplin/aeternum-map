@@ -51,6 +51,8 @@ export type MarkerRouteItem = {
   issues?: number;
   createdAt: string;
   updatedAt: string;
+  lastUsedAt: string;
+  usageCount: number;
 };
 
 type SortBy = 'match' | 'favorites' | 'date' | 'name' | 'username';
