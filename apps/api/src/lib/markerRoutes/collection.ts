@@ -103,14 +103,19 @@ function ensureMarkerRoutesSchema(): Promise<Document> {
             bsonType: 'int',
           },
           usage: {
-            bsonType: 'object',
-            properties: {
-              lastUsedAt: {
-                bsonType: 'date',
+            bsonType: 'array',
+            items: {
+              bsonType: 'object',
+              properties: {
+                lastUsedAt: {
+                  bsonType: 'date',
+                },
+                userId: {
+                  bsonType: 'string',
+                },
               },
-              userId: {
-                bsonType: 'string',
-              },
+              additionalProperties: false,
+              required: ['lastUsedAt', 'userId'],
             },
           },
           comments: {

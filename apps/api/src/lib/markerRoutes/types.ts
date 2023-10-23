@@ -21,9 +21,9 @@ export type MarkerRouteDTO = {
   origin?: ObjectId;
   createdAt: Date;
   updatedAt: Date;
-  lastUsedAt: Date;
-  usageCount: number;
-  usage: {
+  lastUsedAt?: Date;
+  usageCount?: number;
+  usage?: {
     lastUsedAt: Date;
     userId: string;
   }[];

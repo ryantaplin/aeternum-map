@@ -53,9 +53,6 @@ markerRoutesRouter.post('/', ensureAuthenticated, async (req, res, next) => {
       isPublic: Boolean(isPublic),
       createdAt: now,
       updatedAt: now,
-      lastUsedAt: now,
-      usageCount: 0,
-      usage: [],
     };
 
     if (Array.isArray(texts)) {
@@ -139,7 +136,7 @@ markerRoutesRouter.get('/', async (req, res, next) => {
     }
     const markerRoutes = await getMarkerRoutesCollection()
       .find(query, { projection: { usage: 0 } })
-      .sort({ updatedAt: -1 })
+      .sort({ lastUsedAt: -1, updatedAt: -1 })
       .toArray();
     res.status(200).json(markerRoutes);
   } catch (error) {
@@ -155,9 +152,12 @@ markerRoutesRouter.get('/:id', async (req, res, next) => {
       return;
     }
     const markerRouteId = new ObjectId(id);
-    const markerRoute = await getMarkerRoutesCollection().findOne({
-      _id: markerRouteId,
-    });
+    const markerRoute = await getMarkerRoutesCollection().findOne(
+      {
+        _id: markerRouteId,
+      },
+      { projection: { usage: 0 } }
+    );
     if (!markerRoute) {
       res.status(404).json({ message: 'No route found' });
       return;
@@ -462,8 +462,7 @@ markerRoutesRouter.post(
           usage: markerRoute.usage,
         },
       });
-
-      res.status(201);
+      res.status(201).json({ success: true });
     } catch (error) {
       next(error);
     }
